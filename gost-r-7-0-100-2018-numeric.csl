@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0"
+  demote-non-dropping-particle="sort-only" page-range-format="expanded"
+  default-locale="ru-RU">
+
+  <!--
+    ============================================================================
+    CSL-стиль: ГОСТ Р 7.0.100-2018 (numeric, по порядку упоминания)
+    ============================================================================
+
+    Основан на ГОСТ Р 7.0.100-2018 «Библиографическая запись. Библиографическое
+    описание. Общие требования и правила составления».
+
+    Предназначен для оформления библиографических списков ВКР (выпускных
+    квалификационных работ) с нумерацией по порядку упоминания ссылок в тексте.
+
+    Ключевые отличия от ГОСТ Р 7.0.5-2008 (на котором основан существующий
+    CSL-стиль gost-r-7-0-5-2008-numeric):
+    1. Разделитель областей: «. – » (точка, пробел, тире, пробел)
+    2. Добавлена область вида содержания: «Текст : непосредственный» /
+       «Текст : электронный»
+    3. Добавлена область идентификатора: ISBN, ISSN
+    4. Добавлена область физической характеристики для книг/диссертаций
+    5. Добавлена область серии в круглых скобках
+    6. Количество авторов: первые 3 + [и др.] при 4+ (по п. 5.2.6.8)
+    7. DOI размещается в области идентификатора (перед ISSN/ISBN)
+    8. Для составных частей (статьи, главы) вид содержания идёт до //
+
+    ИЗВЕСТНЫЕ ОГРАНИЧЕНИЯ CSL ДЛЯ ГОСТ:
+    - Невозможно динамически менять язык терминов по языку записи
+      (частично решается в Typst через поле lang)
+    - Нет переменной country для патентов
+    - Сведения об иллюстрациях не имеют CSL-переменной
+    - Тип Anthos в Hayagriva не маппится на CSL-тип chapter;
+      используйте type: Chapter с parent: Book
+    - Сокращения «б. м.», «б. и.» нужно вводить вручную в соответствующие поля
+
+    РЕКОМЕНДАЦИИ ДЛЯ HAYAGRIVA YAML:
+    - type: Article + parent: Periodical  → статья в журнале
+    - type: Book                          → книга
+    - type: Chapter + parent: Book        → глава в книге
+    - type: Thesis                        → диссертация
+    - type: Web                           → веб-ресурс
+    - type: Report                        → отчёт
+    - type: Patent                        → патент
+    НЕ используйте: type: Anthos (используйте Chapter)
+    ============================================================================
+  -->
+
+  <info>
+    <title>Russian GOST R 7.0.100-2018 (numeric, citation-order)</title>
+    <id>http://www.zotero.org/styles/gost-r-7-0-100-2018-numeric</id>
+    <link href="http://www.zotero.org/styles/gost-r-7-0-100-2018-numeric" rel="self"/>
+    <link href="https://protect.gost.ru/document.aspx?control=7&amp;id=223397" rel="documentation"/>
+    <author>
+      <name>Z.ai</name>
+    </author>
+    <contributor>
+      <name>Based on gost-r-7-0-5-2008-numeric by Yurkin Maxim</name>
+    </contributor>
+    <category citation-format="numeric"/>
+    <category field="generic-base"/>
+    <summary>
+      CSL style based on GOST R 7.0.100-2018 for numeric bibliography with
+      citation-order sorting. Includes content-type area, identifier area,
+      physical characteristics, and series area per GOST 7.0.100.
+    </summary>
+    <published>2026-05-26T00:00:00+00:00</published>
+    <updated>2026-05-26T00:00:00+00:00</updated>
+    <rights license="http://creativecommons.org/licenses/by-sa/3.0/">
+      This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License
+    </rights>
+  </info>
+
+  <!-- ==================== LOCALE ==================== -->
+
+  <!-- Default locale: № symbol for issue -->
+  <locale>
+    <terms>
+      <term name="issue" form="symbol">№</term>
+    </terms>
+  </locale>
+
+  <!-- English locale overrides -->
+  <locale xml:lang="en">
+    <terms>
+      <term name="online">electronic resource</term>
+      <term name="letter" form="short">pat.</term>
+      <term name="editor" form="verb-short">ed.</term>
+      <term name="translator" form="verb-short">trans.</term>
+      <term name="edition" form="short">ed.</term>
+      <term name="page" form="short">p.</term>
+      <term name="volume" form="short">vol.</term>
+    </terms>
+  </locale>
+
+  <!-- Russian locale overrides -->
+  <locale xml:lang="ru">
+    <terms>
+      <term name="online">электронный ресурс</term>
+      <term name="letter" form="short">пат.</term>
+      <term name="accessed">дата обращения</term>
+      <term name="editor" form="verb-short">под ред.</term>
+      <term name="translator" form="verb-short">пер.</term>
+      <term name="ordinal">-е</term>
+      <term name="et-al">[и др.]</term>
+      <term name="edition" form="short">изд.</term>
+      <term name="page" form="short">с.</term>
+      <term name="volume" form="short">т.</term>
+      <term name="issue" form="symbol">№</term>
+      <term name="chapter" form="short">гл.</term>
+      <term name="number" form="short">№</term>
+    </terms>
+  </locale>
+
+  <!-- ==================== MACROS ==================== -->
+
+  <!--
+    Макрос: author
+    Автор(ы) в порядке «Фамилия, И. О.»
+    Для ресурсов без автора — подстановка: редактор, затем издатель.
+    По ГОСТ 7.0.100 п. 5.2.6.8: при 4+ авторах — первые 3 + [и др.]
+    (настраивается на уровне bibliography: et-al-min="4" et-al-use-first="3")
+  -->
+  <macro name="author">
+    <names variable="author">
+      <name name-as-sort-order="all" sort-separator=", " initialize-with=". "
+            delimiter=", " delimiter-precedes-last="always"/>
+      <substitute>
+        <names variable="editor"/>
+        <text variable="publisher"/>
+        <text variable="title"/>
+      </substitute>
+    </names>
+  </macro>
+
+  <!--
+    Макрос: title
+    Заглавие ресурса.
+    По ГОСТ 7.0.100-2018 обозначение вида содержания (Текст : электронный /
+    Текст : непосредственный) вынесено в отдельный макрос content-type.
+    Добавлять [Электронный ресурс] не нужно — это устаревшее обозначение
+    из ГОСТ Р 7.0.5-2008, заменённое областью вида содержания по ГОСТ 7.0.100.
+  -->
+  <macro name="title">
+    <text variable="title"/>
+  </macro>
+
+  <!--
+    Макрос: title-addition
+    Сведения, относящиеся к заглавию (п. 5.2.5).
+    Для диссертаций — жанр и номер; для патентов — обозначение; для отчётов — жанр.
+  -->
+  <macro name="title-addition">
+    <choose>
+      <if type="thesis">
+        <group delimiter=" ">
+          <text variable="genre"/>
+          <group delimiter=" ">
+            <text term="letter" form="short"/>
+            <text variable="number"/>
+          </group>
+        </group>
+      </if>
+      <else-if type="patent">
+        <group delimiter=" ">
+          <text term="letter" form="short"/>
+          <text variable="number"/>
+        </group>
+      </else-if>
+      <else-if type="report">
+        <group delimiter=" ">
+          <text variable="genre"/>
+          <text variable="number"/>
+        </group>
+      </else-if>
+      <else>
+        <text variable="genre"/>
+      </else>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: responsibility
+    Сведения об ответственности после знака «/» (п. 5.2.6).
+    Для глав/статей: редакторы контейнера переносятся в container-responsibility.
+  -->
+  <macro name="responsibility">
+    <choose>
+      <if type="chapter paper-conference entry entry-dictionary entry-encyclopedia collection" match="any">
+        <!-- Для составных частей: редакторы идут после заглавия контейнера -->
+        <names variable="translator" delimiter="; ">
+          <label form="verb-short" suffix=" "/>
+          <name initialize-with=". " delimiter=", " delimiter-precedes-last="always"/>
+        </names>
+      </if>
+      <else>
+        <names variable="editor translator" delimiter="; ">
+          <label form="verb-short" suffix=" "/>
+          <name initialize-with=". " delimiter=", " delimiter-precedes-last="always"/>
+        </names>
+      </else>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: container-responsibility
+    Сведения об ответственности контейнера (после «// Заглавие контейнера / »).
+    Только для составных частей (главы, статьи из сборников).
+  -->
+  <macro name="container-responsibility">
+    <choose>
+      <if type="chapter paper-conference entry entry-dictionary entry-encyclopedia collection" match="any">
+        <names variable="editor" delimiter="; ">
+          <label form="verb-short" suffix=" "/>
+          <name initialize-with=". " delimiter=", " delimiter-precedes-last="always"/>
+        </names>
+      </if>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: container-title
+    Заглавие идентифицирующего ресурса (контейнера).
+    Для статей в журналах используется сокращённое название.
+  -->
+  <macro name="container-title">
+    <choose>
+      <if type="article-journal article-magazine" match="any">
+        <text variable="container-title" form="short"/>
+      </if>
+      <else>
+        <text variable="container-title"/>
+      </else>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: edition
+    Область издания (п. 5.3).
+    Формат: «2-е изд.», «3-е изд., испр. и доп.»
+  -->
+  <macro name="edition">
+    <choose>
+      <if is-numeric="edition">
+        <group delimiter=" ">
+          <number variable="edition" form="ordinal"/>
+          <text term="edition" form="short"/>
+        </group>
+      </if>
+      <else>
+        <text variable="edition"/>
+      </else>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: publication
+    Область публикации, производства, распространения (п. 5.5).
+    Для периодических изданий — только год.
+    Для диссертаций — место, год (без издателя).
+    Для книг — Место : Издатель, Год.
+  -->
+  <macro name="publication">
+    <choose>
+      <if type="article-journal article-magazine article-newspaper" match="any">
+        <!-- Для статей: только год публикации -->
+        <date variable="issued">
+          <date-part name="year"/>
+        </date>
+      </if>
+      <else-if type="thesis">
+        <!-- Для диссертаций: Место, Год (без издателя) -->
+        <group delimiter=", ">
+          <text variable="publisher-place"/>
+          <date variable="issued">
+            <date-part name="year"/>
+          </date>
+        </group>
+      </else-if>
+      <else-if type="webpage post-weblog post" match="any">
+        <!-- Для веб-ресурсов: Место, Год (опционально) -->
+        <group delimiter=", ">
+          <text variable="publisher-place"/>
+          <date variable="issued">
+            <date-part name="year"/>
+          </date>
+        </group>
+      </else-if>
+      <else>
+        <!-- Для книг и прочих: Место : Издатель, Год -->
+        <group delimiter=", ">
+          <group delimiter=" : ">
+            <text variable="publisher-place"/>
+            <text variable="publisher"/>
+          </group>
+          <date variable="issued">
+            <date-part name="year"/>
+          </date>
+        </group>
+      </else>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: locators
+    Обозначения тома, выпуска, номера (п. 5.4.5, п. 6.3.3.7).
+    Для статей: Т. vol, № issue
+    Для газет: 25 нояб. (№ 217)
+    Для книг/глав: Т. vol
+  -->
+  <macro name="locators">
+    <choose>
+      <if type="article-journal article-magazine" match="any">
+        <group delimiter=", ">
+          <group delimiter=" ">
+            <text term="volume" form="short" text-case="capitalize-first"/>
+            <text variable="volume"/>
+          </group>
+          <group delimiter=" ">
+            <text term="issue" form="symbol"/>
+            <text variable="issue"/>
+          </group>
+        </group>
+      </if>
+      <else-if type="article-newspaper">
+        <group delimiter=" ">
+          <date variable="issued">
+            <date-part name="day" suffix=" "/>
+            <date-part name="month" form="short" suffix="."/>
+          </date>
+          <group prefix="(" suffix=")">
+            <text term="issue" form="symbol"/>
+            <text variable="issue" prefix=" "/>
+          </group>
+        </group>
+      </else-if>
+      <else-if type="book chapter paper-conference entry entry-dictionary entry-encyclopedia collection report" match="any">
+        <choose>
+          <if variable="volume">
+            <group delimiter=" ">
+              <text term="volume" form="short" text-case="capitalize-first"/>
+              <text variable="volume"/>
+            </group>
+          </if>
+        </choose>
+      </else-if>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: page
+    Сведения о местоположении составной части: С. 136–144
+    По ГОСТ 7.0.100 п. 7.4.1.
+    По п. 4.6.11 ГОСТ: при сочетании точки сокращения и точки разделителя
+    областей одна из них опускается. Однако точка после «С.» — это точка
+    сокращения, а точка разделителя областей идёт ПОСЛЕ номера страницы.
+    Двойной точки не возникает: «С. 136–144. – URL: ...».
+    Поэтому точка после «С» сохраняется.
+  -->
+  <macro name="page">
+    <group delimiter=" ">
+      <label variable="page" form="short"/>
+      <text variable="page"/>
+    </group>
+  </macro>
+
+  <!--
+    Макрос: physical
+    Область физической характеристики (п. 5.6).
+    Для книг и диссертаций: 215 с.
+    По п. 4.6.11 ГОСТ: при сочетании точки сокращения и точки разделителя
+    областей одна опускается. Точка после «с.» — это точка сокращения.
+    Если за физической характеристикой следует область вида содержания,
+    точка сокращения сливается с точкой разделителя: «215 с. – Текст».
+    CSL-процессор автоматически объединит точку сокращения с точкой
+    разделителя областей при необходимости.
+  -->
+  <macro name="physical">
+    <choose>
+      <if type="book thesis report" match="any">
+        <choose>
+          <if variable="number-of-pages">
+            <group delimiter=" ">
+              <text variable="number-of-pages"/>
+              <text value="с."/>
+            </group>
+          </if>
+        </choose>
+      </if>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: series
+    Область серии и многочастного монографического ресурса (п. 5.7).
+    Формат: (Название серии ; вып. 8)
+  -->
+  <macro name="series">
+    <group prefix="(" suffix=")">
+      <group delimiter=" ; ">
+        <text variable="collection-title"/>
+        <choose>
+          <if variable="collection-number">
+            <text variable="collection-number"/>
+          </if>
+        </choose>
+      </group>
+    </group>
+  </macro>
+
+  <!--
+    Макрос: access
+    Сведения о доступе к электронным ресурсам (п. 5.8.6.4).
+    Формат: URL: http://... (дата обращения: 14.04.2018)
+  -->
+  <macro name="access">
+    <choose>
+      <if variable="URL">
+        <text variable="URL" prefix="URL: "/>
+        <choose>
+          <if variable="accessed">
+            <group prefix=" (" suffix=")" delimiter=": ">
+              <text term="accessed"/>
+              <date variable="accessed">
+                <date-part name="day" suffix="." form="numeric-leading-zeros"/>
+                <date-part name="month" suffix="." form="numeric-leading-zeros"/>
+                <date-part name="year"/>
+              </date>
+            </group>
+          </if>
+        </choose>
+      </if>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: identifier
+    Область идентификатора ресурса (п. 5.9).
+    Для статей — ISSN, для книг — ISBN.
+  -->
+  <macro name="identifier">
+    <choose>
+      <if type="article-journal article-magazine article-newspaper" match="any">
+        <text variable="ISSN" prefix="ISSN "/>
+      </if>
+      <else>
+        <text variable="ISBN" prefix="ISBN "/>
+      </else>
+    </choose>
+  </macro>
+
+  <!--
+    Макрос: content-type
+    Область вида содержания и средства доступа (п. 5.10).
+    Для электронных ресурсов: «Текст : электронный»
+    Для печатных: «Текст : непосредственный»
+  -->
+  <macro name="content-type">
+    <choose>
+      <if type="webpage post-weblog post" match="any">
+        <text value="Текст : электронный"/>
+      </if>
+      <else-if variable="URL">
+        <text value="Текст : электронный"/>
+      </else-if>
+      <else>
+        <text value="Текст : непосредственный"/>
+      </else>
+    </choose>
+  </macro>
+
+  <!-- ==================== CITATION ==================== -->
+  <!--
+    Внутритекстовые ссылки: [1], [1, 2], [1, с. 15]
+    По ГОСТ Р 7.0.5-2008 (ссылки) с нумерацией по порядку упоминания.
+  -->
+  <citation collapse="citation-number">
+    <sort>
+      <key variable="citation-number"/>
+    </sort>
+    <layout prefix="[" suffix="]" delimiter=",">
+      <text variable="citation-number"/>
+      <group prefix=", " delimiter=" ">
+        <label variable="locator" form="short" plural="never"/>
+        <text variable="locator"/>
+      </group>
+    </layout>
+  </citation>
+
+  <!-- ==================== BIBLIOGRAPHY ==================== -->
+  <!--
+    Библиографический список: нумерация по порядку упоминания в тексте.
+    et-al-min="5" et-al-use-first="3" — по ГОСТ 7.0.100 п. 5.2.6.8:
+    при 5+ авторах указываются первые 3 + [и др.]
+
+    Структура каждого типа записи следует областям ГОСТ 7.0.100.
+    Разделитель областей: «. – » (точка и тире, п. 4.6.1).
+    Элементы внутри области разделяются предписанными знаками (: / ; // и т.д.)
+  -->
+  <bibliography et-al-min="5" et-al-use-first="3" entry-spacing="0" second-field-align="flush">
+    <sort>
+      <key variable="citation-number"/>
+    </sort>
+    <layout suffix=".">
+      <text variable="citation-number" suffix="."/>
+      <choose>
+
+        <!-- ============================================================
+             СТАТЬИ В ЖУРНАЛАХ / ГАЗЕТАХ / ЖУРНАЛАХ
+             Формат:
+             Автор. Заглавие : сведения / Ответственность. –
+             Текст : [тип] // Журнал. – Год. – Т., №. – С. – URL. – DOI. – ISSN.
+             ============================================================ -->
+        <if type="article-journal article-magazine article-newspaper article" match="any">
+          <group>
+            <!-- Область 1: Заглавие и сведения об ответственности (аналитическая часть) -->
+            <group delimiter=". ">
+              <text macro="author"/>
+              <text macro="title"/>
+            </group>
+            <text macro="title-addition" prefix=": "/>
+            <text macro="responsibility" prefix=" / "/>
+            <!--
+              Область вида содержания и соединительный элемент //
+              Если есть контейнер (журнал/сборник): Текст : [тип] // Контейнер
+              Если контейнера нет: Текст идёт в конец записи (последняя область по ГОСТ)
+            -->
+            <choose>
+              <if variable="container-title">
+                <text macro="content-type" prefix=". – "/>
+                <text macro="container-title" prefix=" // "/>
+                <!-- Область публикации (год) -->
+                <text macro="publication" prefix=". – "/>
+                <!-- Обозначения тома, выпуска, номера -->
+                <text macro="locators" prefix=". – "/>
+                <!-- Местоположение составной части (страницы) -->
+                <text macro="page" prefix=". – "/>
+                <!-- URL и дата обращения -->
+                <text macro="access" prefix=". – "/>
+                <!-- DOI -->
+                <text variable="DOI" prefix=". – DOI "/>
+                <!-- Область идентификатора -->
+                <text macro="identifier" prefix=". – "/>
+              </if>
+              <else>
+                <!-- Без контейнера: публикация, страницы, URL, DOI, идентификатор, затем Текст -->
+                <text macro="publication" prefix=". – "/>
+                <text macro="page" prefix=". – "/>
+                <!-- URL и дата обращения -->
+                <text macro="access" prefix=". – "/>
+                <!-- DOI -->
+                <text variable="DOI" prefix=". – DOI "/>
+                <!-- Область идентификатора -->
+                <text macro="identifier" prefix=". – "/>
+                <!-- Область вида содержания (последняя область) -->
+                <text macro="content-type" prefix=". – "/>
+              </else>
+            </choose>
+          </group>
+        </if>
+
+        <!-- ============================================================
+             ГЛАВЫ / СТАТЬИ В СБОРНИКАХ / ДОКЛАДЫ НА КОНФЕРЕНЦИЯХ
+             Формат:
+             Автор. Заглавие : сведения / Ответственность. –
+             Текст : [тип] // Контейнер / Ред. – Издание. –
+             Место : Издатель, Год. – Т. – С. – (Серия). – URL. – DOI. – ISBN.
+             ============================================================ -->
+        <else-if type="chapter paper-conference entry entry-dictionary entry-encyclopedia collection" match="any">
+          <group>
+            <!-- Область 1: Заглавие и сведения об ответственности -->
+            <group delimiter=". ">
+              <text macro="author"/>
+              <text macro="title"/>
+            </group>
+            <text macro="title-addition" prefix=": "/>
+            <text macro="responsibility" prefix=" / "/>
+            <!--
+              Область вида содержания и соединительный элемент //
+              Если есть контейнер: Текст : [тип] // Контейнер / Ред.
+              Если контейнера нет: Текст идёт в конец записи
+            -->
+            <choose>
+              <if variable="container-title">
+                <text macro="content-type" prefix=". – "/>
+                <text macro="container-title" prefix=" // "/>
+                <text macro="container-responsibility" prefix=" / "/>
+                <!-- Область издания -->
+                <text macro="edition" prefix=". – "/>
+                <!-- Область публикации -->
+                <text macro="publication" prefix=". – "/>
+                <!-- Том/выпуск -->
+                <text macro="locators" prefix=". – "/>
+                <!-- Местоположение составной части (страницы) -->
+                <text macro="page" prefix=". – "/>
+                <!-- Область серии -->
+                <text macro="series" prefix=". – "/>
+                <!-- URL и дата обращения -->
+                <text macro="access" prefix=". – "/>
+                <!-- DOI -->
+                <text variable="DOI" prefix=". – DOI "/>
+                <!-- Область идентификатора -->
+                <text macro="identifier" prefix=". – "/>
+              </if>
+              <else>
+                <!-- Без контейнера: издание, публикация, том, страницы, серия, URL, DOI, ISBN,
+                Текст -->
+                <text macro="edition" prefix=". – "/>
+                <text macro="publication" prefix=". – "/>
+                <text macro="locators" prefix=". – "/>
+                <text macro="page" prefix=". – "/>
+                <text macro="series" prefix=". – "/>
+                <text macro="access" prefix=". – "/>
+                <text variable="DOI" prefix=". – DOI "/>
+                <text macro="identifier" prefix=". – "/>
+                <!-- Область вида содержания (последняя область) -->
+                <text macro="content-type" prefix=". – "/>
+              </else>
+            </choose>
+          </group>
+        </else-if>
+
+        <!-- ============================================================
+             ВЕБ-РЕСУРСЫ (сайты, блоги, онлайн-документы)
+             Формат:
+             Автор. Заглавие / Ответственность. –
+             Место, Год. – URL: ... (дата обращения: ...). –
+             Текст : электронный.
+             ============================================================ -->
+        <else-if type="webpage post-weblog post" match="any">
+          <group>
+            <!-- Область 1: Заглавие и сведения об ответственности -->
+            <group delimiter=". ">
+              <text macro="author"/>
+              <text macro="title"/>
+            </group>
+            <text macro="title-addition" prefix=": "/>
+            <text macro="responsibility" prefix=" / "/>
+            <!-- Область публикации (опционально: место, год) -->
+            <text macro="publication" prefix=". – "/>
+            <!-- URL и дата обращения -->
+            <text macro="access" prefix=". – "/>
+            <!-- Область вида содержания -->
+            <text macro="content-type" prefix=". – "/>
+          </group>
+        </else-if>
+
+        <!-- ============================================================
+             ДИССЕРТАЦИИ
+             Формат:
+             Автор. Заглавие : жанр / Ответственность. –
+             Место, Год. – Страниц с. – Текст : [тип].
+             ============================================================ -->
+        <else-if type="thesis">
+          <group>
+            <!-- Область 1: Заглавие и сведения об ответственности -->
+            <group delimiter=". ">
+              <text macro="author"/>
+              <text macro="title"/>
+            </group>
+            <text macro="title-addition" prefix=": "/>
+            <text macro="responsibility" prefix=" / "/>
+            <!-- Область публикации (место, год — без издателя) -->
+            <text macro="publication" prefix=". – "/>
+            <!-- Область физической характеристики -->
+            <text macro="physical" prefix=". – "/>
+            <!-- URL (если доступно онлайн) -->
+            <text macro="access" prefix=". – "/>
+            <!-- Область вида содержания -->
+            <text macro="content-type" prefix=". – "/>
+          </group>
+        </else-if>
+
+        <!-- ============================================================
+             ПАТЕНТЫ
+             Формат:
+             Автор. Заглавие : пат. №... – Текст : [тип].
+             ============================================================ -->
+        <else-if type="patent">
+          <group>
+            <!-- Область 1: Заглавие -->
+            <group delimiter=". ">
+              <text macro="author"/>
+              <text variable="title"/>
+            </group>
+            <text macro="title-addition" prefix=" : "/>
+            <!-- Дата публикации -->
+            <date variable="issued" prefix=". – ">
+              <date-part name="day" suffix="." form="numeric-leading-zeros"/>
+              <date-part name="month" suffix="." form="numeric-leading-zeros"/>
+              <date-part name="year"/>
+            </date>
+            <!-- Область вида содержания -->
+            <text macro="content-type" prefix=". – "/>
+          </group>
+        </else-if>
+
+        <!-- ============================================================
+             КНИГИ, ОТЧЁТЫ, СТАНДАРТЫ И ПРОЧЕЕ (по умолчанию)
+             Формат:
+             Автор. Заглавие : сведения / Ответственность. – Издание. –
+             Место : Издатель, Год. – Страниц с. – Т. – (Серия). –
+             URL. – DOI. – ISBN. – Текст : [тип].
+             ============================================================ -->
+        <else>
+          <group>
+            <!-- Область 1: Заглавие и сведения об ответственности -->
+            <group delimiter=". ">
+              <text macro="author"/>
+              <text macro="title"/>
+            </group>
+            <text macro="title-addition" prefix=": "/>
+            <text macro="responsibility" prefix=" / "/>
+            <!-- Область издания -->
+            <text macro="edition" prefix=". – "/>
+            <!-- Область публикации -->
+            <text macro="publication" prefix=". – "/>
+            <!-- Область физической характеристики -->
+            <text macro="physical" prefix=". – "/>
+            <!-- Том/выпуск (для многотомных) -->
+            <text macro="locators" prefix=". – "/>
+            <!-- Область серии -->
+            <text macro="series" prefix=". – "/>
+            <!-- URL и дата обращения -->
+            <text macro="access" prefix=". – "/>
+            <!-- DOI -->
+            <text variable="DOI" prefix=". – DOI "/>
+            <!-- Область идентификатора -->
+            <text macro="identifier" prefix=". – "/>
+            <!-- Область вида содержания и средства доступа -->
+            <text macro="content-type" prefix=". – "/>
+          </group>
+        </else>
+
+      </choose>
+    </layout>
+  </bibliography>
+</style>
